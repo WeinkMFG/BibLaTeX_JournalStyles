@@ -1,4 +1,4 @@
-%Insert in preamble
+%Insert in preamble after loading style commands
 %\let\oldmultinamedelim\multinamedelim
 %\let\oldfinalnamedelim\finalnamedelim
 %\renewcommand*{\multinamedelim}{\addspace\&\addspace}
@@ -7,9 +7,14 @@
 %	\renewcommand*{\multinamedelim}{\oldmultinamedelim}%
 %	\renewcommand*{\finalnamedelim}{\oldfinalnamedelim}%
 %}
+%\makeatletter
+%\AtBeginDocument{\toggletrue{blx@useprefix}}
+%\AtBeginBibliography{\togglefalse{blx@useprefix}}
+%\makeatother
 
 %Save all journal titles and collection titles in curly braces
 %Use addendum for additional information
+%Add \newrefcontext[sorting=nyt] before \printbibliography
 
 \usepackage[style=authoryear,%
 	dashed=true,%
@@ -17,7 +22,7 @@
 	sortcites=true,%
 	hyperref=true,%
 	giveninits=true,%
-	useprefix=true,%
+	useprefix=false,%
 	maxbibnames=99,%
 	maxcitenames=2,%
 	mincitenames=1,%
@@ -43,8 +48,8 @@
 %Print author names as all caps in bibliography and normal in citations
 \renewcommand{\mkbibnamegiven}[1]{\ifcitation{#1}{\MakeUppercase{#1}}}
 \renewcommand{\mkbibnamefamily}[1]{\ifcitation{#1}{\MakeUppercase{#1}}}
-\renewcommand{\mkbibnameprefix}[1]{\ifcitation{#1}{\MakeUppercase{#1}}}
-\renewcommand{\mkbibnamesuffix}[1]{\ifcitation{#1}{\MakeUppercase{#1}}}
+\renewcommand{\mkbibnameprefix}[1]{#1}
+\renewcommand{\mkbibnamesuffix}[1]{#1}
 
 %Print all authors as Last name-first name (author-date system)
 \DeclareNameAlias{sortname}{family-given}
