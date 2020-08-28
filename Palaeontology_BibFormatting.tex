@@ -1,0 +1,522 @@
+%Insert in preamble
+%\let\oldmultinamedelim\multinamedelim
+%\let\oldfinalnamedelim\finalnamedelim
+%\renewcommand*{\multinamedelim}{\addspace\&\addspace}
+%\renewcommand*{\finalnamedelim}{\addspace\&\addspace}
+%\AtBeginBibliography{%
+%	\renewcommand*{\multinamedelim}{\oldmultinamedelim}%
+%	\renewcommand*{\finalnamedelim}{\oldfinalnamedelim}%
+%}
+
+%Save all journal titles and collection titles in curly braces
+%Use addendum for additional information
+
+\usepackage[style=authoryear,%
+	dashed=true,%
+	sorting=ynt,%
+	sortcites=true,%
+	hyperref=true,%
+	giveninits=true,%
+	useprefix=true,%
+	maxbibnames=99,%
+	maxcitenames=2,%
+	mincitenames=1,%
+	maxitems=99,%
+	backend=biber,%
+	uniquename=false,%
+	uniquelist=false]%
+	{biblatex}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Allow breaks in url and doi  %
+%Set to positive number <10000%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\setcounter{biburlnumpenalty}{9000}%after numbers
+\setcounter{biburlucpenalty}{9000}%after lowercase letters
+\setcounter{biburllcpenalty}{9000}%after uppercase letter
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Formatting authors names%
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%Print author names as all caps in bibliography and normal in citations
+\renewcommand{\mkbibnamegiven}[1]{\ifcitation{#1}{\MakeUppercase{#1}}}
+\renewcommand{\mkbibnamefamily}[1]{\ifcitation{#1}{\MakeUppercase{#1}}}
+\renewcommand{\mkbibnameprefix}[1]{\ifcitation{#1}{\MakeUppercase{#1}}}
+\renewcommand{\mkbibnamesuffix}[1]{\ifcitation{#1}{\MakeUppercase{#1}}}
+
+%Print all authors as Last name-first name (author-date system)
+\DeclareNameAlias{sortname}{family-given}
+
+%Define author separators
+\renewcommand{\multinamedelim}{\addcomma\addspace}
+\renewcommand{\finalnamedelim}{\addspace and\addspace}
+
+%Print italic 'et al.'
+\renewbibmacro*{name:andothers}{
+	\ifboolexpr{
+		test {\ifnumequal{\value{listcount}}{\value{liststop}}}
+		and
+		test \ifmorenames}
+		{\ifnumgreater{\value{liststop}}{1}
+			{\finalandcomma}
+			{}%
+		\andothersdelim\bibstring[\textit]{andothers}}
+		{}}
+		
+%%%%%%%%%%%%%%%%%%
+%Formatting years%
+%%%%%%%%%%%%%%%%%%
+
+%Remove parentheses around years, space after authors
+\usepackage{xpatch}
+\xpatchbibmacro{date+extradate}{%
+	\printtext[parens]%
+	}{%
+	\setunit*{\addspace}%
+	\printtext%
+	}{}{}
+	
+%Set letter after date in italics
+\DeclareFieldFormat{extradate}{\textit{\mknumalph{#1}}}
+	
+%%%%%%%%%%%%%%%%%%
+%Formatting lists%
+%%%%%%%%%%%%%%%%%%
+
+%Replace recurring authors by one dash per author
+\renewcommand{\bibnamedash}{\rule[0.1\baselineskip]{3em}{0.5pt}}
+\newcommand{\multidashdelim}{\space\space}
+\newcommand{\finaldashdelim}{\space\space}
+
+\newtoggle{bbx:goahead}
+\InitializeBibliographyStyle{\global\csundef{bbx@lastname@1}}
+
+\newbibmacro*{bbx:printlist}[1]{%
+		\toggletrue{bbx:goahead}%
+		\printnames[dashed:given-family]{#1}}
+
+\newbibmacro*{dash:delim}{%
+	\ifnumgreater{\value{listcount}}{\value{liststart}}
+		{\ifboolexpr{
+			test {\ifnumless{\value{listcount}}{\value{liststop}}}
+			or
+			test \ifmorenames
+		}
+			{\multidashdelim}
+			{\finaldashdelim}}
+		{}}
+
+\DeclareNameFormat{dashed:given-family}{%
+	\ifboolexpr{togl {bbx:goahead} 
+								and test {\iffieldequalcs{hash}{bbx@lastname@\the\value{listcount}}}}
+		{\usebibmacro{dash:delim}\bibnamedash}
+		{\global\togglefalse{bbx:goahead}%
+			\ifgiveninits
+				{\usebibmacro{name:family-given}
+					{\namepartfamily}%
+					{\namepartgiveni}%
+					{\namepartprefix}%
+					{\namepartsuffix}}
+				{\usebibmacro{name:family-given}
+					{\namepartfamily}%
+					{\namepartgiven}%
+					{\namepartprefix}%
+					{\namepartsuffix}}}%
+	\csxdef{bbx@lastname@\the\value{listcount}}{\thefield{hash}}}
+
+\renewbibmacro*{author}{%
+	\ifboolexpr{test {\ifuseauthor}
+							and not test {\ifnameundef{author}} }
+		{\usebibmacro{bbx:printlist}{author}%
+			\setunit{\addcomma\space}%
+			\usebibmacro{authorstrg}
+			\usebibmacro{date+extradate}}
+		{\global\csundef{bbx@lastname@1}}}
+		
+\renewbibmacro*{bbx:editor}[1]{%
+	\ifboolexpr{test {\ifuseeditor}
+							and not test {\ifnameundef{editor}} }
+		{\usebibmacro{bbx:printlist}{editor}%
+			\setunit{\addcomma\space}%
+			\usebibmacro{#1}%
+			\clearname{editor}}
+		{\global\csundef{bbx@lastname@1}}}
+
+\renewbibmacro*{bbx:translator}[1]{%
+	\ifboolexpr{test {\ifusetranslator}
+							and not test {\ifnameundef{translator}} }
+		{\usebibmacro{bbx:printlist}{translator}%
+			\setunit{\addcomma\space}%
+			\usebibmacro{#1}%
+			\clearname{translator}}
+		{\global\csundef{bbx@lastname@1}}}
+
+%%%%%%%%%%%%%%%%%%%
+%Formatting titles%
+%%%%%%%%%%%%%%%%%%%
+
+%Remove qutotation marks from titles
+\DeclareFieldFormat
+	[article,inbook,incollection,inproceedings,patent,thesis,unpublished,dataset]
+	{title}{#1\isdot}
+
+%Make all titles sentence case
+%Safe journal titles in curly braces
+\DeclareFieldFormat{titlecase}{\MakeSentenceCase{#1}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+%Formatting page ranges%
+%%%%%%%%%%%%%%%%%%%%%%%%
+
+%Remove "pp." only in journals page-ranges
+\DeclareFieldFormat{pages}{#1}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Remove "in" in journal articles %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%Reformat "in:" to "In" and remove before journal articles
+\renewbibmacro{in:}{%
+	\ifentrytype{article}{}{%
+	\printtext{\textit{In}\nopunct\addspace}}%
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Formatting journal data %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%Comma after journal name
+\DeclareFieldFormat{journaltitle}{\mkbibemph{#1}\isdot}
+\renewbibmacro*{journal+issuetitle}{%
+	\usebibmacro{journal}%
+	\setunit*{\addcomma\space}%
+	\iffieldundef{series}
+		{}
+		{\newunit
+		\printfield{series}%
+		\setunit{\addspace}}%
+	\usebibmacro{volume+number+eid}%
+	\setunit{\addspace}%
+	\usebibmacro{issue+date}%
+	\setunit{\addcolon\space}%
+	\usebibmacro{issue}%
+	\newunit}
+
+%Set volume in bold, print issue with space in parentheses, pages after comma after
+\DeclareFieldFormat[article]{volume}{\textbf{#1}}
+\renewbibmacro*{volume+number+eid}{%
+	\printfield{volume}%
+	\setunit*{\space}%
+	\printfield[parens]{number}%
+	\setunit{\addcomma\space}%
+	\printfield{eid}}
+\renewbibmacro*{note+pages}{%
+	\printfield{note}%
+	\setunit{\addcomma\space}%
+	\printfield{pages}%
+	\newunit}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Formatting book data %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%Change bibliographydriver for books and collections to remove double pagetotal
+\DeclareBibliographyDriver{book}{%
+  \usebibmacro{bibindex}%
+  \usebibmacro{begentry}%
+  \usebibmacro{author/editor+others/translator+others}%
+  \setunit{\printdelim{nametitledelim}}\newblock
+  \usebibmacro{maintitle+title}%
+  \newunit
+  \printlist{language}%
+  \newunit\newblock
+  \usebibmacro{byauthor}%
+  \newunit\newblock
+  \usebibmacro{byeditor+others}%
+  \newunit\newblock
+  \printfield{edition}%
+  \newunit
+  \iffieldundef{maintitle}
+    {\printfield{volume}%
+     \printfield{part}}
+    {}%
+  \newunit
+  \printfield{volumes}%
+  \newunit\newblock
+  \usebibmacro{series+number}%
+  \newunit\newblock
+  \printfield{note}%
+  \newunit\newblock
+  \usebibmacro{publisher+location+date}%
+  \newunit\newblock
+  \usebibmacro{chapter+pages}%
+  %\newunit
+  %\printfield{pagetotal}%
+  \newunit\newblock
+  \iftoggle{bbx:isbn}
+    {\printfield{isbn}}
+    {}%
+  \newunit\newblock
+  \usebibmacro{doi+eprint+url}%
+  \newunit\newblock
+  \usebibmacro{addendum+pubstate}%
+  \setunit{\bibpagerefpunct}\newblock
+  \usebibmacro{pageref}%
+  \newunit\newblock
+  \iftoggle{bbx:related}
+    {\usebibmacro{related:init}%
+     \usebibmacro{related}}
+    {}%
+  \usebibmacro{finentry}}
+\DeclareBibliographyDriver{collection}{%
+  \usebibmacro{bibindex}%
+  \usebibmacro{begentry}%
+  \usebibmacro{editor+others}%
+  \setunit{\printdelim{nametitledelim}}\newblock
+  \usebibmacro{maintitle+title}%
+  \newunit
+  \printlist{language}%
+  \newunit\newblock
+  \usebibmacro{byeditor+others}%
+  \newunit\newblock
+  \printfield{edition}%
+  \newunit
+  \iffieldundef{maintitle}
+    {\printfield{volume}%
+     \printfield{part}}
+    {}%
+  \newunit
+  \printfield{volumes}%
+  \newunit\newblock
+  \usebibmacro{series+number}%
+  \newunit\newblock
+  \printfield{note}%
+  \newunit\newblock
+  \usebibmacro{publisher+location+date}%
+  \newunit\newblock
+  \usebibmacro{chapter+pages}%
+  %\newunit
+  %\printfield{pagetotal}%
+  \newunit\newblock
+  \iftoggle{bbx:isbn}
+    {\printfield{isbn}}
+    {}%
+  \newunit\newblock
+  \usebibmacro{doi+eprint+url}%
+  \newunit\newblock
+  \usebibmacro{addendum+pubstate}%
+  \setunit{\bibpagerefpunct}\newblock
+  \usebibmacro{pageref}%
+  \newunit\newblock
+  \iftoggle{bbx:related}
+    {\usebibmacro{related:init}%
+     \usebibmacro{related}}
+    {}%
+  \usebibmacro{finentry}}
+
+%Change "eds." to "eds"
+\DefineBibliographyStrings{english}{%
+	editor={ed\adddot},
+	editors={eds},
+}
+
+%Print year after editors in collections
+\renewbibmacro*{editor+others}{%
+	\ifboolexpr{
+		test \ifuseeditor
+		and
+		not test {\ifnameundef{editor}}
+	}
+		{\printnames{editor}%
+			\setunit{\printdelim{editortypedelim}}%
+			\usebibmacro{editor+othersstrg}%
+			\clearname{editor}%
+			\usebibmacro{date+extradate}}
+    {}}
+
+%Print editor in books only if author undefined, print editor in inbooks, incollections, and inproceedings before booktitle
+\renewbibmacro*{byeditor+others}{%
+	\ifthenelse{\ifentrytype{incollection}\OR\ifentrytype{inbook}\OR\ifentrytype{inproceedings}\OR\ifentrytype{conference}}%
+		{\ifnameundef{editor}%
+			{\usebibmacro{booktitle}}%
+			{{\printnames{editor}}%
+			\addspace%
+			\mkbibparens{\usebibmacro{editorstrg}}%
+			\clearname{editor}%
+			\newunit%
+			\usebibmacro{booktitle}}%
+		}
+		{\ifthenelse{\ifentrytype{book}\AND\ifnameundef{author}}%
+			{\ifnameundef{editor}%
+				{}
+				{\usebibmacro{byeditor+othersstrg}%
+				\setunit{\addspace}%
+				\printnames[byeditor]{editor}%
+				\clearname{editor}%
+				\newunit}%
+			}
+			{\ifthenelse{\ifentrytype{book}}
+				{}
+				{\ifnameundef{editor}%
+				{}
+				{\usebibmacro{byeditor+othersstrg}%
+				\setunit{\addspace}%
+				\printnames[byeditor]{editor}%
+				\clearname{editor}%
+				\newunit}}%
+			}}
+	\usebibmacro{byeditorx}%
+	\usebibmacro{bytranslator+others}}
+
+\renewbibmacro*{maintitle+booktitle}{%
+	\iffieldundef{maintitle}
+		{}
+		{\usebibmacro{maintitle}%
+		\newunit\newblock
+		\iffieldundef{volume}
+			{}
+			{\printfield{volume}%
+			\printfield{part}%
+			\setunit{\addcolon\space}}%
+		}%
+		\newunit%
+	}
+
+%Print series-number in bold
+\DeclareFieldFormat[book, inbook, incollection]{number}{Vol.~\textbf{#1}}
+\newbibmacro*{series+number}{%
+  \printfield{series}%
+  \setunit*{\addcomma\addspace}%
+  \printfield{number}%
+  \newunit}
+
+%Set to print publisher, place
+\renewbibmacro*{publisher+location+date}{%
+	\printtext{%
+		\printlist{publisher}%
+		\iflistundef{location}%
+			{\setunit*{}}%
+			{\setunit*{\addcomma\space}}%
+		\printlist{location}%
+		\setunit*{\addcomma\space}%
+		\usebibmacro{date}}%
+	}
+	
+%Print page range after title in incollection
+\renewbibmacro*{title}{%
+	\ifboolexpr{
+		test {\iffieldundef{title}}
+		and
+		test {\iffieldundef{subtitle}}
+	}
+		{}
+		\ifthenelse{\ifentrytype{incollection}\OR\ifentrytype{inbook}\OR\ifentrytype{inproceedings}\OR\ifentrytype{conference}}
+			{\printtext[title]{%
+				\printfield[titlecase]{title}%
+				\setunit{\subtitlepunct}%
+				\printfield[titlecase]{subtitle}%
+				\setunit*{\adddot\space}%
+				\printfield{pages}}%
+			\newunit}
+			{\printtext[title]{%
+				\printfield[titlecase]{title}%
+				\setunit{\subtitlepunct}%
+				\printfield[titlecase]{subtitle}}%
+			\newunit}%
+	\printfield{titleaddon}}
+
+%Print total pages at end
+\renewcommand*{\bibpagespunct}{\addcomma\space}
+\renewbibmacro*{chapter+pages}{%
+  \printfield{chapter}%
+  \setunit{\bibpagespunct}%
+  \printfield{pagetotal}%
+  \newunit}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%Format thesis data %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%Change bibliographydriver to remove double pagetotals
+\DeclareBibliographyDriver{thesis}{%
+  \usebibmacro{bibindex}%
+  \usebibmacro{begentry}%
+  \usebibmacro{author}%
+  \setunit{\printdelim{nametitledelim}}\newblock
+  \usebibmacro{title}%
+  \newunit
+  \printlist{language}%
+  \newunit\newblock
+  \usebibmacro{byauthor}%
+  \newunit\newblock
+  \printfield{note}%
+  \newunit\newblock
+  \printfield{type}%
+  \newunit
+  \usebibmacro{institution+location+date}%
+  \newunit\newblock
+  \usebibmacro{chapter+pages}%
+  %\newunit
+  %\printfield{pagetotal}%
+  \newunit\newblock
+  \iftoggle{bbx:isbn}
+    {\printfield{isbn}}
+    {}%
+  \newunit\newblock
+  \usebibmacro{doi+eprint+url}%
+  \newunit\newblock
+  \usebibmacro{addendum+pubstate}%
+  \setunit{\bibpagerefpunct}\newblock
+  \usebibmacro{pageref}%
+  \newunit\newblock
+  \iftoggle{bbx:related}
+    {\usebibmacro{related:init}%
+     \usebibmacro{related}}
+    {}%
+  \usebibmacro{finentry}}
+
+%Add "unpublished" before thesis type
+\DeclareFieldFormat[thesis]{type}{Unpublished #1}
+
+%Change "Place:University" to "University, Place"
+\newbibmacro*{institution+location+date}{%
+  \printlist{institution}%
+  \iflistundef{location}
+    {\setunit*{\addcomma\space}}
+    {\setunit*{\addcomma\space}}%
+  \printlist{location}%
+  \setunit*{\addcomma\space}%
+  \usebibmacro{date}%
+  \newunit}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%Format dataset data %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%Remove doi's and urls, except for datasets
+\AtEveryBibitem{
+	\ifentrytype{dataset}%
+	{}%
+	{\clearfield{doi}}%
+	}
+\AtEveryBibitem{\clearfield{url}}
+
+%Reformat doi
+\DeclareUrlCommand\bibdoi{\urlstyle{same}}
+\DeclareFieldFormat{doi}{\bibdoi{http://dx.doi.org/#1}}
+
+%Print organization in italics
+\DeclareListFormat{organization}{\textit{#1}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%Enable and format comments%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%Set comments (addendum) in brackets	
+\renewbibmacro*{addendum+pubstate}{%
+  \printfield[brackets]{addendum}%
+  \newunit\newblock
+  \printfield{pubstate}}
+	

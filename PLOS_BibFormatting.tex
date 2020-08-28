@@ -1,0 +1,230 @@
+\usepackage[style=numeric-comp,%
+	sorting=none,%
+	sortcites=false,%
+	hyperref=true,%
+	giveninits=true,%
+	useprefix=true,%
+	maxbibnames=6,%
+	minbibnames=6,%
+	maxcitenames=2,%
+	mincitenames=2,%
+	maxitems=99,%
+	backend=biber]%
+	{biblatex}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Allow breaks in url and doi  %
+%Set to positive number <10000%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\setcounter{biburlnumpenalty}{9000}%after numbers
+\setcounter{biburlucpenalty}{9000}%after lowercase letters
+\setcounter{biburllcpenalty}{9000}%after uppercase letter
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Formatting label numbers in bibliography%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\DeclareFieldFormat{labelnumberwidth}{\mkbibbold{#1\adddot}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Formatting authors names%
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%No space between initials
+\renewcommand{\bibinitdelim}{}
+%No full stop after initials
+\renewcommand{\bibinitperiod}{}
+%No comma between last name and first name/intials (in last-name--first-name order)
+\renewcommand{\revsdnamepunct}{}
+
+%Print all authors as Last name-first name (numeric system)
+\DeclareNameAlias{default}{family-given}
+
+%Do not automatically capitalize prefixes in bibliography
+%with useprefix=true option
+\renewbibmacro*{begentry}{\midsentence}
+
+%%%%%%%%%%%%%%%%%%
+%Formatting lists%
+%%%%%%%%%%%%%%%%%%
+
+%Redefine separators (easy version, everything treated alike)
+\renewcommand{\multinamedelim}{\addcomma\space}
+\renewcommand{\finalnamedelim}{\addcomma\space}
+\renewcommand{\multilistdelim}{\addcomma\space}
+\renewcommand{\finallistdelim}{\addcomma\space}
+
+%%%%%%%%%%%%%%%%%%%
+%Formatting titles%
+%%%%%%%%%%%%%%%%%%%
+
+%Remove qutotation marks from titles
+\DeclareFieldFormat
+	[article,inbook,incollection,inproceedings,patent,thesis,unpublished]
+	{title}{#1\isdot}
+	
+%Set journal and booktitles upright
+\DeclareFieldFormat[article]{journaltitle}{#1}
+\DeclareFieldFormat[book]{title}{#1}
+\DeclareFieldFormat[inbook]{booktitle}{#1}
+\DeclareFieldFormat[incollection]{booktitle}{#1}
+\DeclareFieldFormat[inproceedings]{booktitle}{#1}
+
+%Only make titles of articles etc. sentence case, but leave title of books etc.
+\DeclareFieldFormat{sentencecase}{\MakeSentenceCase{#1}}
+
+\renewbibmacro*{title}{%
+	\ifthenelse{\iffieldundef{title}\AND\iffieldundef{subtitle}}
+		{}
+		{\ifthenelse{\ifentrytype{article}\OR\ifentrytype{inbook}%
+			\OR\ifentrytype{incollection}\OR\ifentrytype{inproceedings}%
+			\OR\ifentrytype{inreference}}
+			{\printtext[title]{%
+				\printfield[sentencecase]{title}%
+				\setunit{\subtitlepunct}%
+				\printfield[sentencecase]{subtitle}}}%
+			{\printtext[title]{%
+			\printfield[titlecase]{title}%
+			\setunit{\subtitlepunct}%
+			\printfield[titlecase]{subtitle}}}%
+	\newunit}%
+	\printfield{titleaddon}%
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+%Formatting page ranges%
+%%%%%%%%%%%%%%%%%%%%%%%%
+
+%Remove "pp." only in journals page-ranges
+\DeclareFieldFormat[article]{pages}{#1}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Remove "in" in journal articles %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%Just remove "in" before journal articles, leave rest as is
+\renewbibmacro{in:}{%
+	\ifentrytype{article}{}{%
+	\printtext{\bibstring{in}\intitlepunct}}%
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Formatting journal data %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%Full stop after journal name, year before volume
+\newbibmacro*{issue+date-parens}{%
+	\iffieldundef{issue}%
+		{}%
+		{\printfield{issue}}%
+	\newunit}
+\DeclareFieldFormat{journaltitle}{\mkbibemph{#1}\isdot}
+\renewbibmacro*{journal+issuetitle}{%
+	\usebibmacro{journal}%
+	\usebibmacro{date}
+	\setunit*{\addsemicolon\space}%
+	\iffieldundef{series}
+		{}
+		{\newunit
+		\printfield{series}%
+		\setunit{\addspace}}%
+	\usebibmacro{volume+number+eid}%
+	\usebibmacro{issue+date-parens}%
+	\setunit{\addcolon\space}%
+	\usebibmacro{issue}%
+	\newunit}
+
+%volume and issue as volume(issue) instead of volume.issue
+\renewbibmacro*{volume+number+eid}{%
+	\printfield{volume}%
+	\setunit*{}%
+	\printfield[parens]{number}%
+	\setunit{\addcomma\space}%
+	\printfield{eid}}
+
+%colon before pages in journals
+\renewbibmacro*{note+pages}{%
+	\printfield{note}%
+	\setunit{\addcolon}%
+	\printfield{pages}%
+	\newunit}
+	
+%%Reformat doi to roman link, REQUIRES HYPERREF
+\DeclareUrlCommand\bibdoi{\urlstyle{sf}}
+\DeclareUrlCommand\biburl{\urlstyle{sf}}
+\DeclareFieldFormat{doi}{\biburl{https://dx.doi.org/#1}}
+\DeclareFieldFormat{url}{\biburl{#1}}
+\renewbibmacro*{doi+eprint+url}{%
+	\iftoggle{bbx:doi}
+		{\printfield{doi}}
+		{}%
+	\newunit\newblock
+	\iftoggle{bbx:eprint}
+		{\usebibmacro{eprint}}
+		{}%
+	\newunit\newblock
+	\iffieldundef{doi}{
+		{\usebibmacro{url+urldate}}
+		}{}
+	}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Formatting book data %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%Print editor in books only if author undefined, print editor in inbooks, incollections, and inproceedings before booktitle
+\renewbibmacro*{byeditor+others}{%
+	\ifthenelse{\ifentrytype{incollection}\OR\ifentrytype{inbook}\OR\ifentrytype{inproceedings}\OR\ifentrytype{conference}}%
+		{\ifnameundef{editor}%
+			{\usebibmacro{booktitle}}%
+			{{\printnames{editor}}%
+			\addcomma\addspace%
+			\usebibmacro{editorstrg}%
+			\clearname{editor}%
+			\newunit%
+			\usebibmacro{booktitle}}%
+		}
+		{\ifthenelse{\ifentrytype{book}\AND\ifnameundef{author}}%
+			{\ifnameundef{editor}%
+				{}
+				{\usebibmacro{byeditor+othersstrg}%
+				\setunit{\addspace}%
+				\printnames[byeditor]{editor}%
+				\clearname{editor}%
+				\newunit}%
+			}
+			{\ifthenelse{\ifentrytype{book}}
+				{}
+				{\ifnameundef{editor}%
+				{}
+				{\usebibmacro{byeditor+othersstrg}%
+				\setunit{\addspace}%
+				\printnames[byeditor]{editor}%
+				\clearname{editor}%
+				\newunit}}%
+			}}
+	\usebibmacro{byeditorx}%
+	\usebibmacro{bytranslator+others}}
+
+\renewbibmacro*{maintitle+booktitle}{%
+	\iffieldundef{maintitle}
+		{}
+		{\usebibmacro{maintitle}%
+		\newunit\newblock
+		\iffieldundef{volume}
+			{}
+			{\printfield{volume}%
+			\printfield{part}%
+			\setunit{\addcolon\space}}%
+		}%
+		\newunit%
+	}
+
+%Editors as editor/editors instead of ed./eds.
+\DefineBibliographyStrings{english}{editor={editor}}
+\DefineBibliographyStrings{english}{editors={editors}}
+
+%Total pages with p. instead of pp.
+\DefineBibliographyStrings{english}{pagetotal={p\adddot}}
+\DefineBibliographyStrings{english}{pagetotals={p\adddot}}
