@@ -1,8 +1,14 @@
-# BibLaTeX journal-style files
+# BibTeX and BibLaTeX journal-style files
 
-This repository contains a collection of BibLaTeX formattings for different journals.
+This repository contains a collection of BibTeX and BibLaTeX formattings for different journals.
 
-# Description of styles
+# BibTeX styles
+
+## nature.bst
+
+A style compatible with guidelines for *Nature* journals (https://www.nature.com/). It is only suitable for those *Nature*-publications that include article titles and book titles for InCollection in the references. The style requires "\usepackage{natbib}" to work and uses the "\cite{}" command. It is much closer to the current *Nature* style than the style naturemag.bst included in the LaTeX package "nature", which has not been updated in quite a while.
+
+# BibLaTeX styles
 
 ## Palaeontology_BibFormatting.tex
 
