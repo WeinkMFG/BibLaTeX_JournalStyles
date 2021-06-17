@@ -10,9 +10,13 @@ A style compatible with guidelines for *Nature* journals (https://www.nature.com
 
 # BibLaTeX styles
 
+## ISME_BibFormatting.tex
+
+A style for the journal *The ISME Journal* based on style guides provided by the [International Society for Microbial Ecology](https://www.isme-microbes.org/).
+
 ## Palaeontology_BibFormatting.tex
 
-A style for the journal *Palaeontology* (https://onlinelibrary.wiley.com/journal/14754983) based on the style guides provided by the [Palaeontological Association](https://www.palass.org/publications/palaeontology-journal#for-authors).
+A style for the journals *Palaeontology* and *Papers in Palaeontology* (https://onlinelibrary.wiley.com/journal/14754983) based on the style guides provided by the [Palaeontological Association](https://www.palass.org/publications/palaeontology-journal#for-authors).
 
 ## PLOS_BibFormatting.tex
 
