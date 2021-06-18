@@ -17,30 +17,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \makeatletter
-%Changes \textcite from "Author [1]" to "Author (ref. 1)"
-\renewbibmacro*{textcite}{%
-  \iffieldequals{namehash}{\cbx@lasthash}
-    {\usebibmacro{cite:comp}}
-    {\usebibmacro{cite:dump}%
-     \ifbool{cbx:parens}
-       {\printtext{\bibcloseparen}\global\boolfalse{cbx:parens}}
-       {}%
-     \iffirstcitekey
-       {}
-       {\setunit{\textcitedelim}}%
-     \usebibmacro{cite:init}%
-     \ifnameundef{labelname}
-       {\printfield[citetitle]{labeltitle}}
-       {\printnames{labelname}}%
-     \setunit*{\printdelim{namelabeldelim}}%
-     \printtext{\bibopenparen}\global\booltrue{cbx:parens}%
-     \ifnumequal{\value{citecount}}{1}
-       {\usebibmacro{prenote}}
-       {}%
-     \printtext{ref.\space}\usebibmacro{cite:comp}%
-     \stepcounter{textcitecount}%
-     \savefield{namehash}{\cbx@lasthash}}}
-
 %Allows citation after numbers as defined by citation style: "Bcl-2 [1]" becomes "Bcl-2 (ref. 1)" when using "\numcite{}".
 \DeclareCiteCommand{\numcite}[\mkbibparens]
   {\usebibmacro{cite:init}%
