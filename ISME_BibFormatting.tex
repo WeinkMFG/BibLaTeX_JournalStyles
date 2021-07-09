@@ -177,7 +177,7 @@
 
 %%Reformat doi to roman link, REQUIRES HYPERREF
 \DeclareUrlCommand\bibdoi{\urlstyle{rm}}
-\DeclareUrlCommand\biburl{\urlstyle{tt}}
+\DeclareUrlCommand\biburl{\urlstyle{rm}}
 \DeclareFieldFormat{doi}{\href{http://dx.doi.org/#1}{\bibdoi{http://dx.doi.org/#1}}}
 \DeclareFieldFormat{url}{\biburl{#1}}
 \renewbibmacro*{doi+eprint+url}{%
