@@ -10,6 +10,10 @@ A style compatible with guidelines for *Nature* journals (https://www.nature.com
 
 # BibLaTeX styles
 
+## Interface_BibFormatting.tex
+
+A style for the journal *Journal of the Royal Society Interface* based on style guides provided by the [Royal Society](https://royalsociety.org/journals/authors/author-guidelines/).
+
 ## ISME_BibFormatting.tex
 
 A style for the journal *The ISME Journal* based on style guides provided by the [International Society for Microbial Ecology](https://www.isme-microbes.org/).
